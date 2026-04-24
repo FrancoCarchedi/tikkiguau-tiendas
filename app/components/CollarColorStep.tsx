@@ -1,0 +1,83 @@
+"use client";
+
+import { COLLAR_COLORS, COLLAR_SIZES, CollarSize } from '@/types/collar';
+import { Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+interface CollarColorStepProps {
+  selectedColor: string;
+  selectedSize: CollarSize;
+  onSelectColor: (color: string) => void;
+  onSelectSize: (size: CollarSize) => void;
+}
+
+const CollarColorStep = ({ selectedColor, selectedSize, onSelectColor, onSelectSize }: CollarColorStepProps) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5"
+    >
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold text-foreground">
+          Elige el color y talla del collar
+        </h2>
+        <p className="text-muted-foreground mt-1">
+          Selecciona el color y talla que mejor se adapte a tu mascota
+        </p>
+      </div>
+
+      <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
+        {COLLAR_COLORS.map((color) => (
+          <button
+            key={color.value}
+            onClick={() => onSelectColor(color.value)}
+            className="group flex flex-col items-center gap-1.5"
+          >
+            <div
+              className={`w-12 h-12 rounded-full border-4 transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-110 ${
+                selectedColor === color.value
+                  ? 'border-primary shadow-soft scale-110'
+                  : 'border-transparent shadow-card'
+              }`}
+              style={{ backgroundColor: color.value }}
+            >
+              {selectedColor === color.value && (
+                <Check className="w-5 h-5 text-white drop-shadow-md" />
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">
+              {color.name}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3 max-w-md mx-auto">
+        {COLLAR_SIZES.map((size) => (
+          <button
+            key={size.value}
+            onClick={() => onSelectSize(size.value)}
+            className={`w-full py-3 px-4 rounded-xl border-2 text-left transition-all ${
+              selectedSize === size.value
+                ? 'border-primary bg-primary/10'
+                : 'border-border bg-card hover:border-primary/50'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-foreground">{size.label}</span>
+              <span className={`text-sm font-medium ${selectedSize === size.value ? 'text-primary' : 'text-muted-foreground'}`}>
+                {size.description}
+              </span>
+            </div>
+            <p className={`text-xs mt-0.5 ${selectedSize === size.value ? 'text-foreground/70' : 'text-muted-foreground'}`}>
+              {size.details}
+            </p>
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+export default CollarColorStep;
