@@ -13,8 +13,10 @@ import {
   MIN_COLLAR_ELEMENTS,
   MAX_LEASH_ELEMENTS,
   MIN_LEASH_ELEMENTS,
+  ProductType,
 } from '@/types/collar';
 import Stepper from './Stepper';
+import ProductStep from './ProductStep';
 import CollarColorStep from './CollarColorStep';
 import CollarPreview from './CollarPreview';
 import LeashColorStep from './LeashColorStep';
@@ -27,8 +29,27 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/app/hooks/use-toast';
 import Image from 'next/image';
 
+type StepKey = 'product' | 'collar-color' | 'collar-design' | 'leash-color' | 'leash-design' | 'user-data' | 'final';
+
+const STEP_LABELS: Record<StepKey, string> = {
+  'product': 'Producto',
+  'collar-color': 'Color collar',
+  'collar-design': 'Diseño collar',
+  'leash-color': 'Color correa',
+  'leash-design': 'Diseño correa',
+  'user-data': 'Datos',
+  'final': 'Enviar',
+};
+
+const FLOWS: Record<ProductType, StepKey[]> = {
+  collar: ['product', 'collar-color', 'collar-design', 'user-data', 'final'],
+  leash: ['product', 'leash-color', 'leash-design', 'user-data', 'final'],
+  both: ['product', 'collar-color', 'collar-design', 'leash-color', 'leash-design', 'user-data', 'final'],
+};
+
 const IndexPage = () => {
   const [step, setStep] = useState(1);
+  const [productType, setProductType] = useState<ProductType | null>(null);
   const [design, setDesign] = useState<CollarDesign>({
     collarColor: COLLAR_COLORS[0].value,
     collarSize: '1',
@@ -43,6 +64,11 @@ const IndexPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const currentFlow: StepKey[] = productType ? FLOWS[productType] : ['product'];
+  const totalSteps = currentFlow.length;
+  const currentStepKey: StepKey = currentFlow[step - 1] ?? 'product';
+  const stepperSteps = currentFlow.map((key) => ({ label: STEP_LABELS[key] }));
 
   const addCollarElement = useCallback(
     (el: Omit<CollarElement, 'id'>) => {
@@ -109,11 +135,10 @@ const IndexPage = () => {
   }, []);
 
   const canProceed = () => {
-    if (step === 1) return true;
-    if (step === 2) return design.elements.length >= MIN_COLLAR_ELEMENTS;
-    if (step === 3) return true;
-    if (step === 4) return leashDesign.elements.length >= MIN_LEASH_ELEMENTS;
-    if (step === 5) return userData.name && userData.email && userData.phone && userData.storeName;
+    if (currentStepKey === 'product') return productType !== null;
+    if (currentStepKey === 'collar-design') return design.elements.length >= MIN_COLLAR_ELEMENTS;
+    if (currentStepKey === 'leash-design') return leashDesign.elements.length >= MIN_LEASH_ELEMENTS;
+    if (currentStepKey === 'user-data') return !!(userData.name && userData.email && userData.phone && userData.storeName);
     return true;
   };
 
@@ -167,9 +192,16 @@ const IndexPage = () => {
         </div>
 
         <main className="px-4 py-6">
-          <Stepper currentStep={step} />
+          <Stepper steps={stepperSteps} currentStep={step} />
 
-          {step === 1 && (
+          {currentStepKey === 'product' && (
+            <ProductStep
+              selectedProduct={productType}
+              onSelect={setProductType}
+            />
+          )}
+
+          {currentStepKey === 'collar-color' && (
             <div className="space-y-8">
               <CollarColorStep
                 selectedColor={design.collarColor}
@@ -183,7 +215,7 @@ const IndexPage = () => {
             </div>
           )}
 
-          {step === 2 && (
+          {currentStepKey === 'collar-design' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <ElementEditor
                 elements={design.elements}
@@ -209,7 +241,7 @@ const IndexPage = () => {
             </div>
           )}
 
-          {step === 3 && (
+          {currentStepKey === 'leash-color' && (
             <div className="space-y-8">
               <LeashColorStep
                 selectedColor={leashDesign.leashColor}
@@ -221,7 +253,7 @@ const IndexPage = () => {
             </div>
           )}
 
-          {step === 4 && (
+          {currentStepKey === 'leash-design' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <ElementEditor
                 elements={leashDesign.elements}
@@ -242,14 +274,17 @@ const IndexPage = () => {
             </div>
           )}
 
-          {step === 5 && <UserDataStep data={userData} onChange={setUserData} />}
+          {currentStepKey === 'user-data' && (
+            <UserDataStep data={userData} onChange={setUserData} />
+          )}
 
-          {step === 6 && (
+          {currentStepKey === 'final' && (
             <FinalStep
               collarColor={design.collarColor}
               elements={design.elements}
               leashDesign={leashDesign}
               userData={userData}
+              productType={productType!}
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
               isSubmitted={isSubmitted}
@@ -268,7 +303,7 @@ const IndexPage = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" /> Atrás
               </Button>
 
-              {step < 6 && (
+              {step < totalSteps && (
                 <Button
                   onClick={() => setStep((s) => s + 1)}
                   disabled={!canProceed()}

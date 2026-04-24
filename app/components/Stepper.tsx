@@ -2,27 +2,24 @@
 
 import { Check } from 'lucide-react';
 
-const STEPS = [
-  { label: 'Collar', number: 1 },
-  { label: 'Diseño', number: 2 },
-  { label: 'Correa', number: 3 },
-  { label: 'Emojis', number: 4 },
-  { label: 'Datos', number: 5 },
-  { label: 'Enviar', number: 6 },
-];
-
-interface StepperProps {
-  currentStep: number;
+interface StepperStep {
+  label: string;
 }
 
-const Stepper = ({ currentStep }: StepperProps) => {
+interface StepperProps {
+  steps: StepperStep[];
+  currentStep: number; // 1-based
+}
+
+const Stepper = ({ steps, currentStep }: StepperProps) => {
   return (
-    <div className="flex items-center justify-center gap-1 mb-5">
-      {STEPS.map((step, i) => {
-        const isCompleted = currentStep > step.number;
-        const isCurrent = currentStep === step.number;
+    <div className="flex items-center justify-center gap-1 mb-5 flex-wrap">
+      {steps.map((step, i) => {
+        const stepNumber = i + 1;
+        const isCompleted = currentStep > stepNumber;
+        const isCurrent = currentStep === stepNumber;
         return (
-          <div key={step.number} className="flex items-center gap-1">
+          <div key={i} className="flex items-center gap-1">
             <div className="flex flex-col items-center gap-1">
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
@@ -33,7 +30,7 @@ const Stepper = ({ currentStep }: StepperProps) => {
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
-                {isCompleted ? <Check className="w-4 h-4" /> : step.number}
+                {isCompleted ? <Check className="w-4 h-4" /> : stepNumber}
               </div>
               <span
                 className={`text-[10px] font-medium ${
@@ -43,10 +40,10 @@ const Stepper = ({ currentStep }: StepperProps) => {
                 {step.label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div
                 className={`w-8 h-0.5 mb-5 transition-colors ${
-                  currentStep > step.number ? 'bg-accent' : 'bg-border'
+                  currentStep > stepNumber ? 'bg-accent' : 'bg-border'
                 }`}
               />
             )}
@@ -58,3 +55,4 @@ const Stepper = ({ currentStep }: StepperProps) => {
 };
 
 export default Stepper;
+

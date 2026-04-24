@@ -1,6 +1,6 @@
 "use client";
 
-import { CollarElement, UserData, LeashDesign } from '@/types/collar';
+import { CollarElement, UserData, LeashDesign, ProductType } from '@/types/collar';
 import { motion } from 'framer-motion';
 import CollarPreview from './CollarPreview';
 import LeashPreview from './LeashPreview';
@@ -12,17 +12,25 @@ interface FinalStepProps {
   elements: CollarElement[];
   leashDesign: LeashDesign;
   userData: UserData;
+  productType: ProductType;
   onSubmit: () => void;
   isSubmitting: boolean;
   isSubmitted: boolean;
   previewRef: React.RefObject<HTMLDivElement | null>;
 }
 
+const PRODUCT_INFO: Record<ProductType, { label: string; price: string; detail: string }> = {
+  collar: { label: 'Collar personalizado', price: '$20.000 ARS', detail: 'Incluye hasta 6 piezas personalizadas.' },
+  leash: { label: 'Correa personalizada', price: '$20.000 ARS', detail: 'Incluye hasta 10 piezas personalizadas.' },
+  both: { label: 'Combo TikkiGuau (Collar + Correa)', price: '$37.000 ARS', detail: 'Incluye hasta 16 piezas en total (6 en collar y 10 en correa).' },
+};
+
 const FinalStep = ({
   collarColor,
   elements,
   leashDesign,
   userData,
+  productType,
   onSubmit,
   isSubmitting,
   isSubmitted,
@@ -69,23 +77,27 @@ const FinalStep = ({
       </div>
 
       <div ref={previewRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-2 text-center">Collar</h3>
-          <CollarPreview collarColor={collarColor} elements={elements} />
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-2 text-center">Correa</h3>
-          <LeashPreview leashColor={leashDesign.leashColor} elements={leashDesign.elements} />
-        </div>
+        {(productType === 'collar' || productType === 'both') && (
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-2 text-center">Collar</h3>
+            <CollarPreview collarColor={collarColor} elements={elements} />
+          </div>
+        )}
+        {(productType === 'leash' || productType === 'both') && (
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-2 text-center">Correa</h3>
+            <LeashPreview leashColor={leashDesign.leashColor} elements={leashDesign.elements} />
+          </div>
+        )}
       </div>
 
       <div className="bg-card rounded-xl p-4 shadow-card space-y-2 max-w-sm mx-auto">
         <h3 className="font-semibold text-foreground border-b pb-2 mb-2">Resumen de tu pedido</h3>
         <div className="flex justify-between items-center text-sm font-medium text-foreground">
-          <span>Combo TikkiGuau (Collar + Correa)</span>
-          <span className="text-primary font-bold">$37.000</span>
+          <span>{PRODUCT_INFO[productType].label}</span>
+          <span className="text-primary font-bold">{PRODUCT_INFO[productType].price}</span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Incluye hasta 16 piezas en total (6 en collar y 10 en correa).</p>
+        <p className="text-xs text-muted-foreground mt-1">{PRODUCT_INFO[productType].detail}</p>
       </div>
 
       <div className="bg-card rounded-xl p-4 shadow-card space-y-2 max-w-sm mx-auto">
