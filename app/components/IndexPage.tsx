@@ -293,15 +293,18 @@ const IndexPage = () => {
           )}
 
           {!isSubmitted && (
-            <div className="flex justify-between items-center mt-6 max-w-lg mx-auto">
-              <Button
-                variant="outline"
-                onClick={() => setStep((s) => s - 1)}
-                disabled={step === 1}
-                className="rounded-xl"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" /> Atrás
-              </Button>
+            <div className="flex justify-between items-center mt-6 max-w-2xl mx-auto">
+              {step > 1 ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setStep((s) => s - 1)}
+                  className="rounded-xl"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Atrás
+                </Button>
+              ) : (
+                <div />
+              )}
 
               {step < totalSteps && (
                 <Button

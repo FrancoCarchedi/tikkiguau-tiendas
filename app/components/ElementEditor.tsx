@@ -35,7 +35,11 @@ interface ElementEditorProps {
   subtitle?: string;
 }
 
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const QWERTY_ROWS = [
+  ['Q','W','E','R','T','Y','U','I','O','P'],
+  ['A','S','D','F','G','H','J','K','L'],
+  ['Z','X','C','V','B','N','M'],
+];
 
 function SortableElement({
   element,
@@ -138,16 +142,19 @@ const ElementEditor = ({
         </p>
       </div>
 
-      {elements.length > 0 && (
-        <div className="space-y-3">
+      <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">Elementos</span>
-            <button
-              onClick={onClear}
-              className="text-sm text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Limpiar
-            </button>
+            <span className="text-sm font-medium text-foreground">
+              {elements.length > 0 ? 'Elementos' : 'No hay elementos seleccionados'}
+            </span>
+            {elements.length > 0 && (
+              <button
+                onClick={onClear}
+                className="text-sm text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Limpiar
+              </button>
+            )}
           </div>
           <DndContext
             sensors={sensors}
@@ -155,7 +162,7 @@ const ElementEditor = ({
             onDragEnd={handleDragEnd}
           >
             <SortableContext items={elements} strategy={horizontalListSortingStrategy}>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 min-h-16 content-start">
                 {elements.map((el) => (
                   <SortableElement
                     key={el.id}
@@ -175,7 +182,6 @@ const ElementEditor = ({
             </SortableContext>
           </DndContext>
         </div>
-      )}
 
       {selectedId && (
         <div className="space-y-2">
@@ -198,27 +204,29 @@ const ElementEditor = ({
       )}
 
       {showLetters && (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <span className="text-sm font-medium text-foreground">Letras</span>
-          <div className="grid grid-cols-9 gap-1.5">
-            {LETTERS.map((l) => (
-              <button
-                key={l}
-                disabled={isFull}
-                onClick={() => onAddElement({ type: 'letter', value: l, color: '#FFFFFF' })}
-                className="h-9 rounded-lg bg-secondary text-secondary-foreground font-semibold text-sm hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {l}
-              </button>
-            ))}
-          </div>
+          {QWERTY_ROWS.map((row, i) => (
+            <div key={i} className="flex justify-start gap-1.5" style={{ paddingLeft: i === 1 ? '1rem' : i === 2 ? '2rem' : '0' }}>
+              {row.map((l) => (
+                <button
+                  key={l}
+                  disabled={isFull}
+                  onClick={() => onAddElement({ type: 'letter', value: l, color: '#FFFFFF' })}
+                  className="w-9 h-9 rounded-lg bg-secondary text-secondary-foreground font-semibold text-sm hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          ))}
         </div>
       )}
 
       <div className="space-y-2">
         <span className="text-sm font-medium text-foreground">Emojis</span>
         <div className="flex gap-2 flex-wrap">
-          {CUSTOM_EMOJIS.map((emoji) => (
+          {CUSTOM_EMOJIS.filter((emoji) => !(mode === 'leash' && emoji.key === 'pez')).map((emoji) => (
             <button
               key={emoji.key}
               disabled={isFull}

@@ -34,7 +34,7 @@ export type ProductType = 'collar' | 'leash' | 'both';
 
 export const PRODUCTS: { type: ProductType; label: string; price: string; description: string }[] = [
   { type: 'collar', label: 'Collar', price: '$20.000 ARS', description: 'Incluye collar y 6 piezas en total.' },
-  { type: 'leash', label: 'Correa', price: '$20.000 ARS', description: 'Incluye correa y 10 piezas en total.' },
+  { type: 'leash', label: 'Correa', price: '$22.000 ARS', description: 'Incluye correa y 10 piezas en total.' },
   { type: 'both', label: 'Combo', price: '$37.000 ARS', description: 'Incluye correa y collar. 16 piezas en total.' },
 ];
 
