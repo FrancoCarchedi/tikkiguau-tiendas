@@ -95,7 +95,7 @@ const UserDataStep = ({ data, onChange, onStoreValidated }: UserDataStepProps) =
           <Input
             id="phone"
             type="tel"
-            placeholder="+34 600 000 000"
+            placeholder="Ej: 11323456789"
             value={data.phone}
             onChange={(e) => onChange({ ...data, phone: e.target.value })}
           />
