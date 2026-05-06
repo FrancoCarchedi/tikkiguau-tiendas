@@ -1,13 +1,69 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
+}
+
+// -------------------------------------------------------------
+// MODELOS DE NEGOCIO (TikkiGuau - sincronizado con landing-next)
+// -------------------------------------------------------------
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELIVERED
+}
+
+enum DeliveryMethod {
+  PICKUP
+  CORREO_DOMICILIO
+  CORREO_SUCURSAL
+}
+
+model Order {
+  id              String         @id @default(uuid())
+  orderNumber     String         @unique
+  status          OrderStatus    @default(PENDING)
+
+  firstName       String
+  lastName        String
+  email           String
+  phone           String
+
+  deliveryMethod  DeliveryMethod
+  address         String?
+  city            String?
+  zipCode         String?
+  trackingCode    String?
+
+  totalAmount     Float
+  orderItems      Json
+
+  // Tienda origen (solo si fue creada desde la app de tiendas)
+  storeId         String?
+  store           Store?         @relation(fields: [storeId], references: [id])
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("orders")
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  keyword   String   @unique
+  isActive  Boolean  @default(true)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("stores")
 }

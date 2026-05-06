@@ -27,7 +27,7 @@ const CollarColorStep = ({ selectedColor, selectedSize, onSelectColor, onSelectS
         </p>
       </div>
 
-      <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
+      <div className="grid grid-cols-5 gap-3 max-w-lg mx-auto">
         {COLLAR_COLORS.map((color) => (
           <button
             key={color.value}
@@ -53,7 +53,7 @@ const CollarColorStep = ({ selectedColor, selectedSize, onSelectColor, onSelectS
         ))}
       </div>
 
-      <div className="flex flex-col gap-3 max-w-md mx-auto">
+      <div className="flex flex-col gap-3 max-w-lg mx-auto">
         {COLLAR_SIZES.map((size) => (
           <button
             key={size.value}
@@ -64,7 +64,7 @@ const CollarColorStep = ({ selectedColor, selectedSize, onSelectColor, onSelectS
                 : 'border-border bg-card hover:border-primary/50'
             }`}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 mb-2">
               <span className="font-semibold text-foreground">{size.label}</span>
               <span className={`text-sm font-medium ${selectedSize === size.value ? 'text-primary' : 'text-muted-foreground'}`}>
                 {size.description}

@@ -7,7 +7,8 @@ import { motion } from 'framer-motion';
 import {
   DndContext,
   closestCenter,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -31,8 +32,11 @@ interface ElementEditorProps {
   maxElements: number;
   minElements: number;
   mode?: 'collar' | 'leash';
+  size?: '1' | '2';
   title?: string;
   subtitle?: string;
+  selectedElementId?: string | null;
+  onSelectElement?: (id: string | null) => void;
 }
 
 const QWERTY_ROWS = [
@@ -92,7 +96,9 @@ function SortableElement({
       )}
       <button
         onClick={onRemove}
-        className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        className={`absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center transition-opacity ${
+          selectedForColor ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+        }`}
       >
         <X className="w-3 h-3" />
       </button>
@@ -110,11 +116,19 @@ const ElementEditor = ({
   maxElements,
   minElements,
   mode = 'collar',
+  size,
   title = 'Personaliza tu collar',
   subtitle,
+  selectedElementId,
+  onSelectElement,
 }: ElementEditorProps) => {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
+  const selectedId = selectedElementId !== undefined ? selectedElementId : internalSelectedId;
+  const setSelectedId = onSelectElement ?? setInternalSelectedId;
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
   const isFull = elements.length >= maxElements;
   const showLetters = mode === 'collar';
 
@@ -149,7 +163,7 @@ const ElementEditor = ({
             </span>
             {elements.length > 0 && (
               <button
-                onClick={onClear}
+                onClick={() => { onClear(); setSelectedId(null); }}
                 className="text-sm text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Limpiar
@@ -185,8 +199,16 @@ const ElementEditor = ({
 
       {selectedId && (
         <div className="space-y-2">
-          <span className="text-sm font-medium text-foreground">Color del elemento</span>
-          <div className="flex gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Color del elemento</span>
+            <button
+              onClick={() => { onRemoveElement(selectedId); setSelectedId(null); }}
+              className="text-sm text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" /> Eliminar
+            </button>
+          </div>
+          <div className="flex gap-2 flex-wrap">
             {ELEMENT_COLORS.map((c) => (
               <button
                 key={c}
@@ -206,27 +228,33 @@ const ElementEditor = ({
       {showLetters && (
         <div className="space-y-1.5">
           <span className="text-sm font-medium text-foreground">Letras</span>
-          {QWERTY_ROWS.map((row, i) => (
-            <div key={i} className="flex justify-start gap-1.5" style={{ paddingLeft: i === 1 ? '1rem' : i === 2 ? '2rem' : '0' }}>
-              {row.map((l) => (
-                <button
-                  key={l}
-                  disabled={isFull}
-                  onClick={() => onAddElement({ type: 'letter', value: l, color: '#FFFFFF' })}
-                  className="w-9 h-9 rounded-lg bg-secondary text-secondary-foreground font-semibold text-sm hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {l}
-                </button>
+          <div className="overflow-x-auto pb-1">
+            <div className="inline-flex flex-col gap-1.5">
+              {QWERTY_ROWS.map((row, i) => (
+                <div key={i} className="flex justify-start gap-1 sm:gap-1.5" style={{ paddingLeft: i === 1 ? '1rem' : i === 2 ? '2rem' : '0' }}>
+                  {row.map((l) => (
+                    <button
+                      key={l}
+                      disabled={isFull}
+                      onClick={() => onAddElement({ type: 'letter', value: l, color: '#FAFAFA' })}
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary text-secondary-foreground font-semibold text-xs sm:text-sm hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
 
       <div className="space-y-2">
         <span className="text-sm font-medium text-foreground">Emojis</span>
         <div className="flex gap-2 flex-wrap">
-          {CUSTOM_EMOJIS.filter((emoji) => !(mode === 'leash' && emoji.key === 'pez')).map((emoji) => (
+          {CUSTOM_EMOJIS
+            .filter((emoji) => !(emoji.key === 'pez' && size === '2'))
+            .map((emoji) => (
             <button
               key={emoji.key}
               disabled={isFull}

@@ -1,15 +1,17 @@
 "use client";
 
-import { COLLAR_COLORS } from '@/types/collar';
+import { COLLAR_COLORS, LEASH_SIZES, LeashSize } from '@/types/collar';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface LeashColorStepProps {
   selectedColor: string;
+  selectedSize?: LeashSize;
   onSelectColor: (color: string) => void;
+  onSelectSize?: (size: LeashSize) => void;
 }
 
-const LeashColorStep = ({ selectedColor, onSelectColor }: LeashColorStepProps) => {
+const LeashColorStep = ({ selectedColor, selectedSize, onSelectColor, onSelectSize }: LeashColorStepProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,11 +23,11 @@ const LeashColorStep = ({ selectedColor, onSelectColor }: LeashColorStepProps) =
           Elige el color de la correa
         </h2>
         <p className="text-muted-foreground mt-1">
-          Selecciona el color para personalizar tu correa
+          Selecciona el color que mejor se adapte a tu mascota
         </p>
       </div>
 
-      <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
+      <div className="grid grid-cols-5 gap-3 max-w-lg mx-auto">
         {COLLAR_COLORS.map((color) => (
           <button
             key={color.value}
@@ -50,6 +52,32 @@ const LeashColorStep = ({ selectedColor, onSelectColor }: LeashColorStepProps) =
           </button>
         ))}
       </div>
+
+      {selectedSize !== undefined && onSelectSize && (
+        <div className="flex flex-col gap-3 max-w-md mx-auto">
+          {LEASH_SIZES.map((size) => (
+            <button
+              key={size.value}
+              onClick={() => onSelectSize(size.value)}
+              className={`w-full py-3 px-4 rounded-xl border-2 text-left transition-all ${
+                selectedSize === size.value
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border bg-card hover:border-primary/50'
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5">
+                <span className="font-semibold text-foreground">{size.label}</span>
+                <span className={`text-sm font-medium ${selectedSize === size.value ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {size.description}
+                </span>
+              </div>
+              <p className={`text-xs mt-0.5 ${selectedSize === size.value ? 'text-foreground/70' : 'text-muted-foreground'}`}>
+                {size.details}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 };

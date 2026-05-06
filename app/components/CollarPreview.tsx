@@ -7,7 +7,8 @@ import { EmojiRenderer } from '@/app/components/custom-emojis/EmojiRenderer';
 import {
   DndContext,
   closestCenter,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -26,6 +27,8 @@ interface CollarPreviewProps {
   onChangeColor?: (id: string, color: string) => void;
   onReorder?: (elements: CollarElement[]) => void;
   onRemoveElement?: (id: string) => void;
+  selectedElementId?: string | null;
+  onSelectElement?: (id: string | null) => void;
 }
 
 function SortableCollarItem({
@@ -67,7 +70,9 @@ function SortableCollarItem({
       {interactive && onRemove && (
         <button
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          className={`absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center transition-opacity ${
+            isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
         >
           <X className="w-2.5 h-2.5" />
         </button>
@@ -95,12 +100,15 @@ function SortableCollarItem({
 }
 
 const CollarPreview = forwardRef<HTMLDivElement, CollarPreviewProps>(
-  ({ collarColor, elements, onChangeColor, onReorder, onRemoveElement }, ref) => {
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+  ({ collarColor, elements, onChangeColor, onReorder, onRemoveElement, selectedElementId, onSelectElement }, ref) => {
+    const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
+    const selectedId = selectedElementId !== undefined ? selectedElementId : internalSelectedId;
+    const setSelectedId = onSelectElement ?? setInternalSelectedId;
     const interactive = !!(onChangeColor && onReorder);
 
     const sensors = useSensors(
-      useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+      useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+      useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
     );
 
     const handleDragEnd = (event: DragEndEvent) => {
