@@ -70,32 +70,27 @@ function SortableElement({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-colors ${
+      {...attributes}
+      {...listeners}
+      onClick={onSelectForColor}
+      className={`relative group flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-colors cursor-grab active:cursor-grabbing ${
         selectedForColor ? 'border-primary bg-neutral-700' : 'border-transparent bg-neutral-800'
       }`}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing"
-      >
-        <GripHorizontal className="w-3 h-3 text-neutral-400" />
-      </div>
+      <GripHorizontal className="w-3 h-3 text-neutral-400" />
       {element.type === 'emoji' ? (
-        <div onClick={onSelectForColor} className="cursor-pointer">
-          <EmojiRenderer emojiKey={element.value} fillColor={element.color || '#FAFAFA'} style={{ width: '1.5rem', height: '1.5rem' }} />
-        </div>
+        <EmojiRenderer emojiKey={element.value} fillColor={element.color || '#FAFAFA'} style={{ width: '1.5rem', height: '1.5rem' }} />
       ) : (
         <span
-          className="text-xl font-bold cursor-pointer"
+          className="text-xl font-bold select-none"
           style={{ color: element.color }}
-          onClick={onSelectForColor}
         >
           {element.value}
         </span>
       )}
       <button
-        onClick={onRemove}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
         className={`absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center transition-opacity ${
           selectedForColor ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
         }`}
